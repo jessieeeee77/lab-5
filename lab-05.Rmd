@@ -1,7 +1,7 @@
 ---
-title: "Lab 04 - La Quinta is Spanish for next to Denny's, Pt. 2"
-author: "Insert your name here"
-date: "Insert date here"
+title: "Lab 05 - Wrangling spatial data"
+author: "Zheqi"
+date: "02/10"
 output: github_document
 ---
 
@@ -18,32 +18,170 @@ states <- read_csv("data/states.csv")
 
 ### Exercise 1
 
-Remove this text, and add your answer for Exercise 1 here.
-Add code chunks as needed.
-Don't forget to label your code chunk.
-Do not use spaces in code chunk labels.
+```{r 1}
+library(ggplot2)
+library(dplyr)
+
+c <- dennys
+d <- laquinta
+c_ak <- c %>%
+  filter(state == "AK")
+nrow(c_ak)
+# 3 locations in Alaska.
+```
 
 ### Exercise 2
 
-Remove this text, and add your answer for Exercise 1 here.
-Add code chunks as needed.
-Don't forget to label your code chunk.
-Do not use spaces in code chunk labels.
+```{r 2}
+d_ak <- d %>%
+  filter(state == "AK")
+nrow(d_ak)
+# 2 locations in Alaska
+```
+
 
 ### Exercise 3
 
 ...
+```{r 3}
+c_d_ak <- full_join(c_ak, d_ak, by = "state")
+c_d_ak
+# 6
+```
 
 ### Exercise 4
 
 ...
+```{r 4}
+# 6 observations
+#variables are address x, city x, zip x, longitude x, latitude x, address y, city y, zip y, longitude y, latitude y, and state.
+```
 
 ### Exercise 5
 
-...
+```{r 5}
+# mutate
+```
+
 
 ### Exercise 6
 
-...
+```{r 6}
+haversine <- function(longitude.x, 
+                      latitude.x, 
+                      longitude.y, 
+                      latitude.y, round = 3) {
+  # convert to radians
+  longitude.x = longitude.x * pi / 180
+  latitude.x  = latitude.x * pi / 180
+  longitude.y = longitude.y * pi / 180
+  latitude.y  = latitude.y  * pi / 180
+  
+  R = 6371 # Earth mean radius in km
+  
+  a = sin((latitude.y - latitude.x)/2)^2 + cos(latitude.x) * cos(latitude.y) * sin((longitude.y - longitude.x)/2)^2
+  d = R * 2 * asin(sqrt(a))
+  
+  return( round(d,round) ) # distance in km
+}
+```
 
-Add exercise headings as needed.
+
+```{r 6.}
+
+
+c_d_ak <- c_d_ak %>%
+  mutate(dist = spatialrisk::haversine(latitude.x, longitude.x, latitude.y, longitude.y))
+```
+
+# Exercise 7
+```{r 7}
+c_d_ak_mindist <- c_d_ak %>%
+  group_by(address.x) %>%
+  summarize(closest = min(dist))
+#1374.128
+```
+#Exercise 8
+Describe the distribution of the distances Denny’s and the nearest La Quinta locations in Alaska. Also include an appripriate visualization and relevant summary statistics.
+```{r 8}
+ggplot(c_d_ak_mindist, mapping = aes(x = address.x, y = closest,
+                           alpha=0.2)) +
+                     theme_linedraw() +
+                  labs (x = "denny's address", y = "distance", title = "Alaska's dennys and laquinta", color = "laquinta's address") + geom_point()
+
+```
+```{r try}
+ggplot() +
+    layer(
+        data = c_ak, mapping = aes(x = longitude, y = latitude, color = address),
+        geom = "point", stat = "identity", position = "identity") +
+    layer(
+        data = d_ak, mapping = aes(x = longitude, y = latitude),
+        geom = "smooth", position = "identity", stat = "smooth", params = list(method = "lm")) 
+```
+
+#Exercise 9
+```{r 9}
+c <- dennys
+d <- laquinta
+c_nc <- c %>%
+  filter(state == "NC")
+d_nc <- d %>%
+  filter(state == "NC")
+c_d_nc <- full_join(c_nc, d_nc, by = "state")
+
+c_d_nc <- c_d_nc %>%
+  mutate(dist = spatialrisk::haversine(latitude.x, longitude.x, latitude.y, longitude.y))
+c_d_nc_mindist <- c_d_nc %>%
+  group_by(address.x) %>%
+  summarize(closest = min(dist))
+ggplot(c_d_nc_mindist, mapping = aes(x = address.x, y = closest,
+                           alpha=0.2)) +
+                     theme_linedraw() +
+                  labs (x = "denny's address", y = "distance", title = "NC's dennys and laquinta", color = "laquinta's address") + geom_point()
+```
+#Exercise 10
+```{r 10}
+c <- dennys
+d <- laquinta
+c_tx <- c %>%
+  filter(state == "TX")
+d_tx <- d %>%
+  filter(state == "TX")
+c_d_tx <- full_join(c_tx, d_tx, by = "state")
+
+c_d_tx <- c_d_tx %>%
+  mutate(dist = spatialrisk::haversine(latitude.x, longitude.x, latitude.y, longitude.y))
+c_d_tx_mindist <- c_d_tx %>%
+  group_by(address.x) %>%
+  summarize(closest = min(dist))
+ggplot(c_d_tx_mindist, mapping = aes(x = address.x, y = closest,
+                           alpha=0.2)) +
+                     theme_linedraw() +
+                  labs (x = "denny's address", y = "distance", title = "Texas' dennys and laquinta", color = "laquinta's address") + geom_point()
+```
+#Exercise 11
+```{r 11}
+c <- dennys
+d <- laquinta
+c_sc <- c %>%
+  filter(state == "SC")
+d_sc <- d %>%
+  filter(state == "SC")
+c_d_sc <- full_join(c_sc, d_sc, by = "state")
+
+c_d_sc <- c_d_sc %>%
+  mutate(dist = spatialrisk::haversine(latitude.x, longitude.x, latitude.y, longitude.y))
+c_d_sc_mindist <- c_d_sc %>%
+  group_by(address.x) %>%
+  summarize(closest = min(dist))
+ggplot(c_d_sc_mindist, mapping = aes(x = address.x, y = closest,
+                           alpha=0.2)) +
+                     theme_linedraw() +
+                  labs (x = "denny's address", y = "distance", title = "SC' dennys and laquinta", color = "laquinta's address") + geom_point()
+```
+
+#Exercise 12
+```{r}
+# It is mostly true for Texas based on the plots. Most of the dennys locate within 10,000m from laquintas. It is also true for Alaska, but there are only a few of dennys and laquintas in Alaska. 
+```
